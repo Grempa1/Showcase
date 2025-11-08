@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Carousel (Transparent Background, Pink Accent)</title>
+    <style>
+        :root {
+            --accent-color: #FF6B97;
+            --dark-text: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: transparent;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--dark-text);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); 
+        }
+
+
+        .main-carousel {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .main-carousel-inner {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 1rem;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 10;
+        }
+        
+        .slide iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+       
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-button:hover {
+            background-color: var(--accent-color);
+            box-shadow: 0 6px 15px rgba(255, 107, 151, 0.4);
+            border-color: var(--accent-color);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        .nav-button.prev {
+            left: 1.5rem;
+        }
+
+        .nav-button.next {
+            right: 1.5rem;
+        }
+
+        .nav-button svg {
+            width: 28px;
+            height: 28px;
+            stroke: var(--dark-text);
+            stroke-width: 2;
+            fill: none;
+            transition: stroke 0.3s;
+        }
+
+        .nav-button:hover svg {
+            stroke: white;
+        }
+
+       
+        .dots {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 0;
+        }
+
+        .dot:hover {
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .dot.active {
+            background-color: var(--accent-color);
+            width: 30px;
+            border-radius: 9999px;
+        }
+
+     
+        .thumbnail-carousel {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .thumbnail-carousel::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .thumbnail-carousel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+
+        .thumbnail-carousel::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 4px;
+        }
+
+        .thumbnail-carousel::-webkit-scrollbar-thumb:hover {
+            background: #E85A82;
+        }
+
+        .thumbnail {
+            position: relative;
+            flex-shrink: 0;
+            width: 200px;
+            aspect-ratio: 16 / 9;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .thumbnail:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .thumbnail.active {
+            opacity: 1;
+            border-color: var(--accent-color);
+            transform: scale(1.0);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+                border-radius: 1rem;
+            }
+
+            .thumbnail {
+                width: 140px;
+            }
+
+            .nav-button {
+                width: 40px;
+                height: 40px;
+            }
+
+            .nav-button svg {
+                width: 24px;
+                height: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-carousel">
+            <div class="main-carousel-inner">
+                </div>
+
+            <button class="nav-button prev" onclick="prevSlide()" aria-label="Previous slide">
+                <svg viewBox="0 0 24 24">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <button class="nav-button next" onclick="nextSlide()" aria-label="Next slide">
+                <svg viewBox="0 0 24 24">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+
+            <div class="dots"></div>
+        </div>
+
+        <div class="thumbnail-carousel"></div>
+    </div>
+
+    <script>
+        // 이쪽을 수정하면 됩니다
+        const slides = [
+            { id: 1, video_id: 'fED_ePXjAcQ', title: '샘플 영상 1' },
+            { id: 2, video_id: '5RnT96sANUQ', title: '샘플 영상 2' },
+            { id: 3, video_id: 'kAFnTZPXq1c', title: '샘플 영상 3' },
+            { id: 4, video_id: 'CGzJG2ZKA_s', title: '샘플 영상 4' },
+            { id: 5, video_id: 'pCMrrt1L9iw', title: '샘플 영상 5' },
+            { id: 6, video_id: '-NlB3eo5Pns', title: '샘플 영상 6' },
+            { id: 7, video_id: 'ms3H4R_lDFg', title: '샘플 영상 7' },
+            { id: 8, video_id: '30ASr_sT8js', title: '샘플 영상 8' },
+            { id: 9, video_id: 'sCiQt0W5k2k', title: '샘플 영상 9' },
+        ];
+
+        let currentSlide = 0;
+        let isTransitioning = false;
+        const transitionDuration = 600; 
+
+        // 유튜브 임베드 URL을 생성하는 헬퍼 함수
+        function getEmbedUrl(videoId) {
+            return `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0`;
+        }
+
+        // 유튜브 썸네일 URL을 생성하는 헬퍼 함수
+        function getThumbnailUrl(videoId) {
+            return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        }
+
+
+      
+        function init() {
+            const mainCarouselInner = document.querySelector('.main-carousel-inner');
+            const dotsContainer = document.querySelector('.dots');
+            const thumbnailCarousel = document.querySelector('.thumbnail-carousel');
+
+           
+            slides.forEach((slide, index) => {
+                const slideDiv = document.createElement('div');
+                slideDiv.className = `slide ${index === 0 ? 'active' : ''}`;
+                
+                const iframe = document.createElement('iframe');
+                iframe.setAttribute('frameborder', '0');
+                iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+                iframe.setAttribute('allowfullscreen', '');
+                
+                iframe.setAttribute('data-video-id', slide.video_id); 
+                
+                if (index === 0) {
+                    iframe.setAttribute('src', getEmbedUrl(slide.video_id));
+                }
+                
+                slideDiv.appendChild(iframe);
+                mainCarouselInner.appendChild(slideDiv);
+            });
+
+            
+            slides.forEach((_, index) => {
+                const dot = document.createElement('button');
+                dot.className = `dot ${index === 0 ? 'active' : ''}`;
+                dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+                dot.onclick = () => goToSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+
+            
+            slides.forEach((slide, index) => {
+                const thumbnail = document.createElement('div');
+                thumbnail.className = `thumbnail ${index === 0 ? 'active' : ''}`;
+                
+                const thumbnailUrl = getThumbnailUrl(slide.video_id);
+                thumbnail.innerHTML = `<img src="${thumbnailUrl}" alt="Thumbnail ${index + 1}: ${slide.title}">`;
+                thumbnail.onclick = () => goToSlide(index);
+                thumbnailCarousel.appendChild(thumbnail);
+            });
+
+           
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') prevSlide();
+                if (e.key === 'ArrowRight') nextSlide();
+            });
+        }
+
+        function updateCarousel() {
+            const slideElements = document.querySelectorAll('.slide');
+            const thumbnailElements = document.querySelectorAll('.thumbnail');
+            const dotElements = document.querySelectorAll('.dot');
+
+
+            slideElements.forEach((slide, index) => {
+                const iframe = slide.querySelector('iframe');
+                const isActive = index === currentSlide;
+                
+                slide.classList.toggle('active', isActive);
+                dotElements[index].classList.toggle('active', isActive);
+                thumbnailElements[index].classList.toggle('active', isActive);
+
+                if (isActive) {
+                   
+                    const videoId = iframe.getAttribute('data-video-id');
+                    iframe.setAttribute('src', getEmbedUrl(videoId));
+                } else {
+                    
+                    if (iframe.getAttribute('src')) {
+                       iframe.setAttribute('src', '');
+                    }
+                }
+            });
+
+            
+            if (thumbnailElements[currentSlide]) {
+                thumbnailElements[currentSlide].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'center'
+                });
+            }
+        }
+        
+        
+        function stopCurrentVideo() {
+            const currentIframe = document.querySelector('.slide.active iframe');
+            if (currentIframe && currentIframe.getAttribute('src')) {
+                
+                currentIframe.setAttribute('src', ''); 
+            }
+        }
+
+        function goToSlide(index) {
+            if (isTransitioning || index === currentSlide) return;
+            isTransitioning = true;
+            
+            stopCurrentVideo(); 
+            
+            currentSlide = index;
+            updateCarousel();
+            setTimeout(() => {
+                isTransitioning = false;
+            }, transitionDuration);
+        }
+
+        function prevSlide() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            
+            stopCurrentVideo(); 
+            
+            currentSlide = currentSlide === 0 ? slides.length - 1 : currentSlide - 1;
+            updateCarousel();
+            setTimeout(() => {
+                isTransitioning = false;
+            }, transitionDuration);
+        }
+
+        function nextSlide() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            
+            stopCurrentVideo(); 
+
+            currentSlide = currentSlide === slides.length - 1 ? 0 : currentSlide + 1;
+            updateCarousel();
+            setTimeout(() => {
+                isTransitioning = false;
+            }, transitionDuration);
+        }
+
+        // Initialize on page load
+        init();
+    </script>
+</body>
+</html>
